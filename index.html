@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arqam Ghayour · Portfolio</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+
+<style>
+  :root{
+    --gold:#d4af37;--gold-bright:#f5d272;--gold-deep:#9c7a1e;--gold-dark:#6e5414;
+    --grey-900:#0e0e10;--grey-850:#141417;--grey-800:#1b1b1f;--grey-700:#26262b;--grey-500:#4a4a52;
+    --text:#e9e6df;--text-dim:#9a968c;
+    --glass:rgba(40,40,46,0.45);--glass-border:rgba(212,175,55,0.25);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--grey-900);
+    color:var(--text);overflow-x:hidden;line-height:1.6}
+  ::selection{background:var(--gold);color:var(--grey-900)}
+
+  #bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .bg-gradient{position:fixed;inset:0;z-index:-1;
+    background:radial-gradient(circle at 20% 20%,rgba(212,175,55,0.08),transparent 40%),
+      radial-gradient(circle at 80% 70%,rgba(212,175,55,0.06),transparent 45%),
+      linear-gradient(160deg,var(--grey-900),var(--grey-850))}
+
+  section{position:relative;z-index:2;padding:70px 8vw}
+  .label{font-size:.8rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);
+    margin-bottom:1.2rem;font-weight:600}
+
+  #hero{min-height:100vh;display:flex;align-items:center;gap:4vw;padding:0 8vw;position:relative}
+  .hero-text{flex:1;min-width:0}
+  .hero-name{font-size:clamp(2.4rem,6.5vw,5.5rem);font-weight:800;line-height:1.15;letter-spacing:-.02em;
+    background:linear-gradient(120deg,var(--gold-bright),var(--gold),var(--gold-deep));
+    -webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:1rem;
+    padding-bottom:.12em}
+  .hero-degree{font-size:clamp(1.1rem,2.4vw,1.8rem);font-weight:600;color:var(--text);margin-bottom:.4rem}
+  .hero-uni{font-size:clamp(1rem,1.8vw,1.3rem);color:var(--text-dim);margin-bottom:.3rem}
+  .hero-cgpa{font-size:.95rem;color:var(--gold);margin-bottom:2rem}
+  .hero-intro{max-width:560px;font-size:clamp(1rem,1.5vw,1.2rem);color:var(--text-dim)}
+  .hero-sketch{flex:0 0 auto;width:min(360px,34vw);filter:drop-shadow(0 0 25px rgba(212,175,55,0.15))}
+  .hero-sketch svg{width:100%;height:auto}
+  .sketch-stroke{fill:none;stroke:var(--gold-bright);stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;opacity:.92}
+  .sketch-fine{fill:none;stroke:var(--gold);stroke-width:1;stroke-linecap:round;opacity:.7}
+  .sketch-soft{fill:none;stroke:var(--gold-deep);stroke-width:.8;stroke-linecap:round;opacity:.5}
+  @media(max-width:760px){#hero{flex-direction:column;justify-content:center;text-align:center}
+    .hero-sketch{width:min(260px,60vw);order:-1;margin-top:8vh}}
+
+  .scroll-hint{position:absolute;bottom:40px;left:8vw;font-size:.75rem;letter-spacing:.3em;
+    text-transform:uppercase;color:var(--text-dim);display:flex;align-items:center;gap:10px}
+  .scroll-hint::before{content:'';width:40px;height:1px;background:var(--gold);animation:scrollLine 2s infinite}
+  @keyframes scrollLine{0%,100%{transform:scaleX(.4);opacity:.4}50%{transform:scaleX(1);opacity:1}}
+
+  .section-title{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;margin-bottom:2.2rem;color:var(--text)}
+  .tw-cursor{display:inline-block;width:3px;height:1em;background:var(--gold);margin-left:4px;
+    vertical-align:text-bottom;animation:blink .7s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  @keyframes idleFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  .edu-box,.skill-box{animation:idleFloat 5s ease-in-out infinite;
+    transition:transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .4s,border-color .4s}
+  .skill-box:nth-child(2){animation-delay:.6s}
+  .skill-box:nth-child(3){animation-delay:1.2s}
+  .skill-box:nth-child(4){animation-delay:1.8s}
+  .edu-box:nth-child(2){animation-delay:.9s}
+
+  .edu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}
+  .edu-box{padding:1.8rem;border-radius:16px;background:var(--grey-800);border:1px solid rgba(212,175,55,0.1)}
+  .edu-box:hover{transform:translateY(-10px) scale(1.03);
+    box-shadow:0 0 22px rgba(212,175,55,0.35);border-color:rgba(212,175,55,0.4)}
+  .edu-box h3{font-size:1.15rem;color:var(--gold-bright);margin-bottom:.3rem}
+  .edu-box .edu-sub{font-size:.95rem;color:var(--text);margin-bottom:.5rem}
+  .edu-box .edu-meta{font-size:.82rem;color:var(--text-dim)}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem}
+  .card{position:relative;border-radius:20px;padding:2px;background:var(--grey-800);
+    transform-style:preserve-3d;overflow:hidden;
+    box-shadow:0 0 0 1px rgba(212,175,55,0.08),0 8px 30px rgba(0,0,0,.4)}
+  .card::before{content:'';position:absolute;inset:-50%;z-index:0;
+    background:conic-gradient(from 0deg,transparent,var(--gold),transparent 30%);
+    opacity:0;transition:opacity .6s;animation:spin 4s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .card:hover::before{opacity:1}
+  .card-inner{position:relative;z-index:1;border-radius:18px;padding:2rem;height:100%;
+    display:flex;flex-direction:column;
+    background-image:linear-gradient(135deg,var(--grey-850),var(--grey-850));background-size:200% 200%;
+    transition:background-image 1.1s ease,color 1.1s ease,backdrop-filter 1.1s ease;transform-style:preserve-3d}
+  .card:hover .card-inner{
+    background-image:linear-gradient(135deg,var(--gold-bright),var(--gold),var(--gold-deep),var(--gold-dark));
+    background-size:300% 300%;animation:gradFlow 6s ease infinite;color:var(--grey-900);
+    -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+  @keyframes gradFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  .card:hover{box-shadow:0 0 25px rgba(212,175,55,0.3),0 20px 50px rgba(0,0,0,.5)}
+  .card-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.6rem;transform:translateZ(40px)}
+  .card-title{font-size:1.4rem;font-weight:700}
+  .badge{font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;font-weight:700;
+    padding:4px 10px;border-radius:20px;border:1px solid var(--gold);color:var(--gold);transition:all 1.1s}
+  .card:hover .badge{border-color:var(--grey-900);color:var(--grey-900);background:rgba(0,0,0,.12)}
+  .card-tech{font-size:.8rem;color:var(--gold);letter-spacing:.05em;margin-bottom:1rem;transition:color 1.1s;transform:translateZ(30px)}
+  .card:hover .card-tech{color:var(--grey-800)}
+  .card-desc{font-size:.95rem;color:var(--text-dim);transition:color 1.1s;transform:translateZ(20px)}
+  .card:hover .card-desc{color:var(--grey-800)}
+  .card-desc li{margin-left:1.1rem;margin-bottom:.45rem}
+  .repo-link{margin-top:auto;padding-top:1.5rem;display:inline-flex;align-items:center;
+    font-size:.9rem;font-weight:700;letter-spacing:.05em;text-decoration:none;color:var(--gold);
+    position:relative;transform:translateZ(50px);transition:color 1.1s;white-space:nowrap}
+  .card:hover .repo-link{color:var(--grey-900)}
+  .repo-swap{display:block;height:1.5em;line-height:1.5em;overflow:hidden;position:relative}
+  .repo-swap span{display:flex;align-items:center;gap:.4rem;height:1.5em;line-height:1.5em;
+    white-space:nowrap;transition:transform .4s cubic-bezier(.6,0,.2,1)}
+  .repo-link:hover .repo-swap span{transform:translateY(-1.5em)}
+  .repo-link.no-repo{cursor:not-allowed}
+  .repo-icon{width:17px;height:17px;fill:currentColor;flex-shrink:0}
+
+  #experience{display:flex;flex-direction:column;align-items:flex-start}
+  .dock{display:flex;justify-content:flex-start;padding:1.4rem;border-radius:28px;margin-top:.5rem;width:100%;
+    background:var(--glass);border:1px solid var(--glass-border);
+    -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+    box-shadow:0 10px 40px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06)}
+  .dock-item{width:min(820px,92vw);padding:1.6rem 2.4rem;border-radius:20px;background:var(--grey-800);
+    transition:transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .4s,border-color .4s;
+    animation:float 4s ease-in-out infinite;text-align:left;border:1px solid rgba(212,175,55,0.14);
+    display:grid;grid-template-columns:auto 1fr;gap:1.6rem;align-items:start}
+  .dock-item:hover{transform:translateY(-14px) scale(1.02);box-shadow:0 0 28px rgba(212,175,55,0.4);
+    border-color:rgba(212,175,55,0.45)}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .dock-icon{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--gold-bright),var(--gold-deep))}
+  .dock-icon svg{width:28px;height:28px;fill:var(--grey-900)}
+  .dock-role{font-size:1.4rem;font-weight:700;color:var(--gold-bright);margin-bottom:.2rem}
+  .dock-org{font-size:1rem;color:var(--text);margin-bottom:.5rem}
+  .dock-status{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:var(--gold);
+    display:inline-flex;align-items:center;gap:.4rem;margin-bottom:.7rem}
+  .dock-status::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--gold);
+    box-shadow:0 0 8px var(--gold);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .dock-desc{font-size:.92rem;color:var(--text-dim);margin-bottom:.8rem}
+  .dock-list{list-style:none;display:flex;flex-wrap:wrap;gap:.4rem 1.6rem;
+    border-top:1px solid rgba(212,175,55,0.15);padding-top:.8rem}
+  .dock-list li{font-size:.84rem;color:var(--text-dim);padding-left:1.2rem;position:relative}
+  .dock-list li::before{content:'';position:absolute;left:0;top:.6em;width:6px;height:6px;border-radius:50%;background:var(--gold)}
+  @media(max-width:600px){.dock-item{grid-template-columns:1fr}}
+
+  .skills-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem}
+  .skill-box{padding:1.5rem;border-radius:16px;background:var(--grey-800);border:1px solid rgba(212,175,55,0.1)}
+  .skill-box:hover{transform:translateY(-10px) scale(1.04);
+    box-shadow:0 0 22px rgba(212,175,55,0.4);border-color:rgba(212,175,55,0.4)}
+  .skill-box h4{color:var(--gold);font-size:.9rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.7rem}
+  .skill-box p{color:var(--text-dim);font-size:.95rem}
+  .tags{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:2rem}
+  .tag{padding:.5rem 1.1rem;border-radius:30px;border:1px solid var(--gold);color:var(--gold-bright);
+    font-size:.85rem;font-weight:600;transition:all .3s}
+  .tag:hover{background:var(--gold);color:var(--grey-900);box-shadow:0 0 14px rgba(212,175,55,0.4);transform:translateY(-4px)}
+
+  footer{position:relative;z-index:2;padding:60px 8vw 50px;text-align:center}
+  .footer-title{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:800;color:var(--gold-bright);margin-bottom:2rem}
+  .contact-dock{display:inline-flex;gap:.8rem;padding:1rem 1.3rem;border-radius:24px;
+    background:var(--glass);border:1px solid var(--glass-border);
+    -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+    box-shadow:0 10px 40px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06);flex-wrap:wrap;justify-content:center}
+  .contact-dock a{display:flex;flex-direction:column;align-items:center;gap:.4rem;text-decoration:none;
+    color:var(--text-dim);font-size:.78rem;padding:.7rem 1rem;border-radius:14px;
+    transition:transform .35s cubic-bezier(.34,1.56,.64,1),color .3s,background .3s}
+  .contact-dock a:hover{transform:translateY(-10px) scale(1.08);color:var(--gold-bright);background:rgba(212,175,55,0.08)}
+  .contact-dock svg{width:24px;height:24px;fill:currentColor}
+  .copyright{margin-top:2rem;font-size:.75rem;color:var(--grey-500)}
+
+  @media(max-width:600px){section{padding:55px 6vw}}
+</style>
+</head>
+<body>
+
+<div class="bg-gradient"></div>
+<canvas id="bg-canvas"></canvas>
+
+<!-- ===== HERO ===== -->
+<section id="hero">
+  <div class="hero-text">
+    <h1 class="hero-name scramble" data-text="Arqam Ghayour">Arqam Ghayour</h1>
+    <p class="hero-degree scramble" data-text="BS in Artificial Intelligence">BS in Artificial Intelligence</p>
+    <p class="hero-uni scramble" data-text="FAST-NUCES Islamabad">FAST-NUCES Islamabad</p>
+    <p class="hero-cgpa scramble" data-text="CGPA 3.4 · 2025 – 2029 (Ongoing)">CGPA 3.4 · 2025 – 2029 (Ongoing)</p>
+    <p class="hero-intro scramble" data-text="AI student and developer building intelligent, elegant software from scratch. Problem-Solver, Quick Learner, Detail-Oriented.">AI student and developer building intelligent, elegant software from scratch. Problem-Solver, Quick Learner, Detail-Oriented.</p>
+  </div>
+
+  <!-- Hand-sketch: previous slim portrait + coat, shirt & tie -->
+  <div class="hero-sketch">
+    <svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg">
+      <!-- hair: one-side combed, slightly puffed -->
+      <path class="sketch-stroke" d="M86 120 C70 80 96 40 150 38 C206 40 232 78 224 124
+        C236 96 232 60 206 46 C238 58 246 96 230 130"/>
+      <path class="sketch-stroke" d="M92 112 C88 70 120 46 158 48 C150 44 120 46 104 66
+        C120 50 150 44 178 50"/>
+      <path class="sketch-fine" d="M100 96 C120 64 168 58 196 74"/>
+      <path class="sketch-fine" d="M110 84 C134 64 170 64 192 80"/>
+      <path class="sketch-fine" d="M150 50 C176 52 200 70 208 96"/>
+      <!-- face outline -->
+      <path class="sketch-stroke" d="M96 116 C92 168 96 210 116 248 C130 274 170 274 184 248
+        C204 210 208 166 204 116"/>
+      <path class="sketch-fine" d="M120 252 C138 270 162 270 180 252"/>
+      <!-- ears -->
+      <path class="sketch-fine" d="M96 150 C84 152 84 176 98 178"/>
+      <path class="sketch-fine" d="M204 150 C216 152 216 176 202 178"/>
+      <!-- eyebrows -->
+      <path class="sketch-stroke" d="M112 156 C126 148 142 150 150 156"/>
+      <path class="sketch-stroke" d="M150 156 C160 150 176 148 190 156"/>
+      <!-- eyes -->
+      <path class="sketch-fine" d="M116 172 C126 166 140 166 148 172 C140 180 126 180 116 172Z"/>
+      <path class="sketch-fine" d="M152 172 C160 166 174 166 184 172 C174 180 160 180 152 172Z"/>
+      <circle cx="132" cy="173" r="3" fill="#f5d272" stroke="none"/>
+      <circle cx="168" cy="173" r="3" fill="#f5d272" stroke="none"/>
+      <!-- nose -->
+      <path class="sketch-fine" d="M150 176 C148 192 144 204 140 210 C146 216 156 216 160 210"/>
+      <!-- light beard + lips -->
+      <path class="sketch-stroke" d="M134 226 C144 232 158 232 168 226"/>
+      <path class="sketch-soft" d="M120 232 C118 244 126 256 140 260"/>
+      <path class="sketch-soft" d="M182 232 C184 244 176 256 162 260"/>
+      <path class="sketch-soft" d="M128 244 l2 6 M138 250 l1 6 M150 254 l0 6 M162 250 l-1 6 M174 244 l-2 6"/>
+      <path class="sketch-soft" d="M122 238 l2 5 M180 238 l-2 5 M134 256 l1 5 M168 256 l-1 5"/>
+      <!-- neck -->
+      <path class="sketch-stroke" d="M132 268 L130 292"/>
+      <path class="sketch-stroke" d="M168 268 L170 292"/>
+
+      <!-- ===== COAT + SHIRT + TIE (slim body) ===== -->
+      <path class="sketch-stroke" d="M130 290 C108 300 90 316 84 348 L80 372"/>
+      <path class="sketch-stroke" d="M170 290 C192 300 210 316 216 348 L220 372"/>
+      <!-- shirt collar -->
+      <path class="sketch-fine" d="M146 290 C152 300 160 300 166 290"/>
+      <!-- left lapel -->
+      <path class="sketch-stroke" d="M132 290 L114 322 L146 372"/>
+      <path class="sketch-fine" d="M132 292 L126 312"/>
+      <!-- right lapel -->
+      <path class="sketch-stroke" d="M168 290 L186 322 L154 372"/>
+      <path class="sketch-fine" d="M168 292 L174 312"/>
+      <!-- tie knot + body -->
+      <path class="sketch-stroke" d="M156 296 L149 307 L156 320 L163 307 Z"/>
+      <path class="sketch-stroke" d="M151 320 L156 372 L161 320"/>
+      <path class="sketch-fine" d="M153 338 L159 338 M153 354 L159 354"/>
+      <!-- coat shading -->
+      <path class="sketch-soft" d="M100 322 l-7 16 M200 322 l7 16"/>
+    </svg>
+  </div>
+
+  <div class="scroll-hint">Scroll</div>
+</section>
+
+<!-- ===== EDUCATION ===== -->
+<section id="education">
+  <div class="label typewriter" data-text="My Background">My Background</div>
+  <h2 class="section-title typewriter" data-text="Education">Education</h2>
+  <div class="edu-grid">
+    <div class="edu-box">
+      <h3>FAST-NUCES Islamabad</h3>
+      <div class="edu-sub">Bachelor of Science in Artificial Intelligence</div>
+      <div class="edu-meta">CGPA: 3.4 · 2025 – 2029 (Ongoing) · Islamabad, Pakistan</div>
+    </div>
+    <div class="edu-box">
+      <h3>PAEC Model College for Boys Chashma</h3>
+      <div class="edu-sub">FSc Pre-Engineering (FBISE)</div>
+      <div class="edu-meta">Grade: A+ · 2021 – 2025 · Chashma, Pakistan</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROJECTS ===== -->
+<section id="projects">
+  <div class="label typewriter" data-text="What I've Built">What I've Built</div>
+  <h2 class="section-title typewriter" data-text="Projects">Projects</h2>
+  <div class="cards">
+
+    <article class="card" data-tilt>
+      <div class="card-inner">
+        <div class="card-head"><div class="card-title">Stroke Test</div></div>
+        <div class="card-tech">HTML · CSS · JavaScript · React · Firebase</div>
+        <ul class="card-desc">
+          <li>Typing speed app with real-time WPM and accuracy tracking.</li>
+          <li>Integrated Firebase Authentication and Firestore for user login and score persistence across sessions.</li>
+          <li>Implemented canvas-based animations for an enhanced user interface.</li>
+        </ul>
+        <a class="repo-link" href="https://stroke-test.vercel.app" target="_blank" rel="noopener">
+          <span class="repo-swap">
+            <span>View Project</span>
+            <span><svg class="repo-icon" viewBox="0 0 24 24"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3m-2 16H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2Z"/></svg> Open Live</span>
+          </span>
+        </a>
+      </div>
+    </article>
+
+    <article class="card" data-tilt>
+      <div class="card-inner">
+        <div class="card-head"><div class="card-title">Image Editor from Scratch</div></div>
+        <div class="card-tech">C++ · OOP</div>
+        <ul class="card-desc">
+          <li>Built a terminal-based image editor from scratch implementing 10 image filters.</li>
+          <li>Designed using OOP principles with a class hierarchy handling image loading, processing, and terminal preview rendering.</li>
+        </ul>
+        <a class="repo-link" href="https://github.com/Arqam-Gh" target="_blank" rel="noopener">
+          <span class="repo-swap">
+            <span>View Code</span>
+            <span><svg class="repo-icon" viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.78 2.73 1.27 3.4.97.1-.75.41-1.27.74-1.56-2.55-.29-5.23-1.27-5.23-5.67 0-1.25.45-2.27 1.19-3.07-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.17a11 11 0 0 1 5.8 0c2.2-1.48 3.17-1.17 3.17-1.17.63 1.58.23 2.75.11 3.04.74.8 1.19 1.82 1.19 3.07 0 4.41-2.69 5.37-5.25 5.66.42.36.8 1.08.8 2.18v3.23c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg> GitHub</span>
+          </span>
+        </a>
+      </div>
+    </article>
+
+    <article class="card" data-tilt>
+      <div class="card-inner">
+        <div class="card-head"><div class="card-title">Multilayer Perceptron from Scratch</div></div>
+        <div class="card-tech">Python · NumPy</div>
+        <ul class="card-desc">
+          <li>Implemented a fully connected neural network manually without ML frameworks.</li>
+          <li>Covered forward pass, backpropagation, and gradient descent variants: Batch, SGD, Mini-batch, Momentum, NAG.</li>
+        </ul>
+        <a class="repo-link" href="https://github.com/Arqam-Gh" target="_blank" rel="noopener">
+          <span class="repo-swap">
+            <span>View Code</span>
+            <span><svg class="repo-icon" viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.78 2.73 1.27 3.4.97.1-.75.41-1.27.74-1.56-2.55-.29-5.23-1.27-5.23-5.67 0-1.25.45-2.27 1.19-3.07-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.17a11 11 0 0 1 5.8 0c2.2-1.48 3.17-1.17 3.17-1.17.63 1.58.23 2.75.11 3.04.74.8 1.19 1.82 1.19 3.07 0 4.41-2.69 5.37-5.25 5.66.42.36.8 1.08.8 2.18v3.23c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg> GitHub</span>
+          </span>
+        </a>
+      </div>
+    </article>
+
+    <article class="card" data-tilt>
+      <div class="card-inner">
+        <div class="card-head"><div class="card-title">Noty</div><span class="badge">Ongoing</span></div>
+        <div class="card-tech">Productivity Tool</div>
+        <ul class="card-desc">
+          <li>An auto committer to .txt files from any active window in the workplace.</li>
+        </ul>
+        <a class="repo-link no-repo" href="javascript:void(0)">
+          <span class="repo-swap">
+            <span>In Progress</span>
+            <span>No Repo</span>
+          </span>
+        </a>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ===== EXPERIENCE ===== -->
+<section id="experience">
+  <div class="label typewriter" data-text="Where I Work">Where I Work</div>
+  <h2 class="section-title typewriter" data-text="Experience">Experience</h2>
+  <div class="dock">
+    <div class="dock-item">
+      <div class="dock-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2 4 6v6c0 5 3.4 9.7 8 10 4.6-.3 8-5 8-10V6l-8-4Zm0 2.2 6 3v4.8c0 4-2.7 7.7-6 8-3.3-.3-6-4-6-8V7.2l6-3Z"/></svg>
+      </div>
+      <div class="dock-body">
+        <div class="dock-role">Web Engineer</div>
+        <div class="dock-org">PWM · Preserve My World</div>
+        <div class="dock-status">Ongoing</div>
+        <div class="dock-desc">Engineering and shipping web experiences, building responsive interfaces and front-end features.</div>
+        <ul class="dock-list">
+          <li>Developing and maintaining web interfaces with modern JavaScript and React.</li>
+          <li>Translating designs into performant, responsive layouts.</li>
+          <li>Collaborating on features end to end as part of an ongoing role.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SKILLS ===== -->
+<section id="skills">
+  <div class="label typewriter" data-text="My Toolkit">My Toolkit</div>
+  <h2 class="section-title typewriter" data-text="Technical Skills">Technical Skills</h2>
+  <div class="skills-grid">
+    <div class="skill-box"><h4>Languages</h4><p>C++, Python, JavaScript, TypeScript</p></div>
+    <div class="skill-box"><h4>Web Technologies</h4><p>HTML, CSS, React.js</p></div>
+    <div class="skill-box"><h4>Concepts</h4><p>Object-Oriented Programming, Logic Building</p></div>
+    <div class="skill-box"><h4>Database</h4><p>SQL (Relational Database Systems)</p></div>
+  </div>
+  <div class="tags">
+    <span class="tag">Problem-Solver</span>
+    <span class="tag">Quick Learner</span>
+    <span class="tag">Detail-Oriented</span>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-title typewriter" data-text="Let's Connect">Let's Connect</div>
+  <div class="contact-dock">
+    <a href="mailto:arqamgh4@gmail.com">
+      <svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5Z"/></svg>
+      arqamgh4@gmail.com
+    </a>
+    <a href="tel:+923368882997">
+      <svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.5 15.5 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.3 0 .7-.2 1l-2.3 2.2Z"/></svg>
+      +92 336 8882997
+    </a>
+    <a href="https://linkedin.com/in/arqam-gh" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14ZM8.34 18.34V10.4H5.67v7.94h2.67ZM7 9.24a1.55 1.55 0 1 0 0-3.1 1.55 1.55 0 0 0 0 3.1Zm11.34 9.1v-4.36c0-2.33-1.25-3.42-2.92-3.42-1.34 0-1.94.74-2.28 1.26v-1.08h-2.66c.04.75 0 7.94 0 7.94h2.66v-4.43c0-.24.02-.48.09-.65.19-.48.63-.97 1.36-.97.96 0 1.35.73 1.35 1.8v4.25h2.4Z"/></svg>
+      linkedin.com/in/arqam-gh
+    </a>
+    <a href="https://github.com/Arqam-Gh" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.78 2.73 1.27 3.4.97.1-.75.41-1.27.74-1.56-2.55-.29-5.23-1.27-5.23-5.67 0-1.25.45-2.27 1.19-3.07-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.17a11 11 0 0 1 5.8 0c2.2-1.48 3.17-1.17 3.17-1.17.63 1.58.23 2.75.11 3.04.74.8 1.19 1.82 1.19 3.07 0 4.41-2.69 5.37-5.25 5.66.42.36.8 1.08.8 2.18v3.23c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+      github.com/Arqam-Gh
+    </a>
+  </div>
+  <p class="copyright">Chashma, Mianwali, Pakistan · © 2026 Arqam Ghayour</p>
+</footer>
+
+<script>
+/* ============ BACKGROUND: constellation + PROMINENT sphere that travels TR -> center -> BL ============ */
+const canvas=document.getElementById('bg-canvas');
+const ctx=canvas.getContext('2d');
+let W,H;
+function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight;}
+resize();addEventListener('resize',resize);
+
+let scrollY=0,target=0;
+addEventListener('scroll',()=>target=window.scrollY);
+
+let nodes=[];
+function buildNodes(){nodes=[];
+  for(let i=0;i<55;i++){nodes.push({bx:Math.random()*W,by:Math.random()*H,r:1+Math.random()*2,
+    depth:0.2+Math.random()*0.9,ang:Math.random()*Math.PI*2,orbit:18+Math.random()*55,
+    speed:0.0015+Math.random()*0.0025});}}
+buildNodes();
+
+const N=520, sphere=[];
+for(let i=0;i<N;i++){
+  const y=1-(i/(N-1))*2;const radius=Math.sqrt(1-y*y);const theta=Math.PI*(3-Math.sqrt(5))*i;
+  sphere.push({x:Math.cos(theta)*radius,y,z:Math.sin(theta)*radius});
+}
+
+function drawConstellation(){
+  const pts=[];
+  nodes.forEach(n=>{n.ang+=n.speed;
+    let ox=n.bx+Math.cos(n.ang)*n.orbit;
+    let oy=n.by+Math.sin(n.ang)*n.orbit - scrollY*n.depth*0.15;
+    let wy=((oy%(H+200))+(H+200))%(H+200)-100;
+    pts.push({x:ox,y:wy,r:n.r,depth:n.depth});});
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+    const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.hypot(dx,dy);
+    if(d<120){const a=(1-d/120)*0.09*((pts[i].depth+pts[j].depth)/2);
+      ctx.strokeStyle=`rgba(212,175,55,${a})`;ctx.lineWidth=0.5;
+      ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();}}
+  pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r*p.depth+0.3,0,Math.PI*2);
+    ctx.fillStyle=`rgba(245,210,114,${0.10+p.depth*0.2})`;ctx.fill();});
+}
+
+function spherePath(t){
+  let cx, cy;
+  if(t<0.5){
+    const k=t/0.5;
+    cx = (W+W*0.02) + (W*0.5 - (W+W*0.02))*k;
+    cy = (-H*0.05) + (H*0.5 - (-H*0.05))*k;
+  } else {
+    const k=(t-0.5)/0.5;
+    cx = (W*0.5) + ((-W*0.02) - W*0.5)*k;
+    cy = (H*0.5) + ((H+H*0.05) - H*0.5)*k;
+  }
+  return {cx,cy};
+}
+
+function drawSphere(progress){
+  const {cx,cy}=spherePath(progress);
+  const centerBoost=1+0.18*Math.sin(progress*Math.PI);
+  const baseR=Math.max(W,H)*0.46*centerBoost;
+  const rotY=progress*Math.PI*2.6 + performance.now()*0.00018;
+  const rotX=0.5+progress*Math.PI*1.1;
+
+  const proj=sphere.map(p=>{
+    let x=p.x*Math.cos(rotY)-p.z*Math.sin(rotY);
+    let z=p.x*Math.sin(rotY)+p.z*Math.cos(rotY);
+    let y=p.y;
+    let y2=y*Math.cos(rotX)-z*Math.sin(rotX);
+    let z2=y*Math.sin(rotX)+z*Math.cos(rotX);
+    const persp=1/(2.2-z2*0.6);
+    return {x:cx+x*baseR*persp,y:cy+y2*baseR*persp,z:z2,persp};
+  });
+
+  for(let i=0;i<proj.length;i++){const a=proj[i];
+    for(let j=i+1;j<i+8 && j<proj.length;j++){const b=proj[j];
+      const d=Math.hypot(a.x-b.x,a.y-b.y);
+      if(d<70){const alpha=(1-d/70)*0.32*((a.z+1.2)/2.4);
+        ctx.strokeStyle=`rgba(212,175,55,${Math.max(alpha,0)})`;ctx.lineWidth=0.7;
+        ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}}}
+  proj.forEach(p=>{const depth=(p.z+1.2)/2.4;
+    ctx.beginPath();ctx.arc(p.x,p.y,1.5*p.persp*2,0,Math.PI*2);
+    ctx.fillStyle=`rgba(245,210,114,${0.2+depth*0.58})`;
+    ctx.shadowColor='rgba(212,175,55,0.85)';ctx.shadowBlur=11*depth;ctx.fill();});
+  ctx.shadowBlur=0;
+}
+
+function render(){
+  scrollY+=(target-scrollY)*0.08;
+  ctx.clearRect(0,0,W,H);
+  const progress=Math.min(scrollY/((document.body.scrollHeight-H)||1),1);
+  drawConstellation();
+  drawSphere(progress);
+  requestAnimationFrame(render);
+}
+render();
+
+/* ============ SCRAMBLE (hero) ============ */
+const CHARS='!<>-_\\/[]{}—=+*^?#________ARQAM01';
+class Scrambler{
+  constructor(el){this.el=el;this.text=el.dataset.text;this.queue=[];this.frame=0;this.req=null;}
+  run(){this.queue=[];
+    for(let i=0;i<this.text.length;i++){const s=Math.floor(Math.random()*30);
+      this.queue.push({to:this.text[i],start:s,end:s+Math.floor(Math.random()*30),char:null});}
+    cancelAnimationFrame(this.req);this.frame=0;this.update=this.update.bind(this);this.update();}
+  update(){let out='',done=0;
+    for(let i=0;i<this.queue.length;i++){let q=this.queue[i];
+      if(this.frame>=q.end){done++;out+=q.to;}
+      else if(this.frame>=q.start){if(!q.char||Math.random()<0.28){q.char=CHARS[Math.floor(Math.random()*CHARS.length)];}
+        out+=`<span style="color:var(--gold-deep);opacity:.7">${q.char}</span>`;}}
+    this.el.innerHTML=out;
+    if(done<this.queue.length){this.frame++;this.req=requestAnimationFrame(this.update);}
+    else this.el.textContent=this.text;}
+}
+addEventListener('load',()=>{document.querySelectorAll('#hero .scramble').forEach((el,i)=>{
+  el.textContent='';setTimeout(()=>new Scrambler(el).run(),250+i*420);});});
+
+/* ============ TYPEWRITER ============ */
+function typeWriter(el){if(el.dataset.done)return;el.dataset.done='1';
+  const text=el.dataset.text;el.textContent='';
+  const cursor=document.createElement('span');cursor.className='tw-cursor';el.appendChild(cursor);
+  let i=0;const speed=18;
+  (function tick(){if(i<=text.length){el.textContent=text.slice(0,i);el.appendChild(cursor);i++;setTimeout(tick,speed);}
+    else setTimeout(()=>cursor.remove(),600);})();}
+
+/* ============ GSAP ============ */
+addEventListener('load',()=>{
+  gsap.registerPlugin(ScrollTrigger);
+  document.querySelectorAll('.typewriter').forEach(el=>{el.textContent='';
+    ScrollTrigger.create({trigger:el,start:'top 85%',once:true,onEnter:()=>typeWriter(el)});});
+  gsap.utils.toArray('.card').forEach((card,i)=>{gsap.from(card,{opacity:0,y:80,scale:.92,duration:.8,ease:'power3.out',
+    scrollTrigger:{trigger:card,start:'top 90%',once:true},delay:(i%3)*0.1});});
+  gsap.utils.toArray('.edu-box, .skill-box, .dock-item, .tag').forEach(el=>{gsap.from(el,{opacity:0,y:50,duration:.7,ease:'power2.out',
+    scrollTrigger:{trigger:el,start:'top 92%',once:true}});});
+  gsap.to('#hero',{yPercent:12,opacity:.6,ease:'none',
+    scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom top',scrub:true}});
+  VanillaTilt.init(document.querySelectorAll('.card[data-tilt]'),
+    {max:12,speed:400,glare:true,'max-glare':0.25,perspective:1000,scale:1.02});
+});
+</script>
+
+</body>
+</html>
